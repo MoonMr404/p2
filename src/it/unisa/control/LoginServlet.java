@@ -1,6 +1,6 @@
 package it.unisa.control;
-
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.sql.SQLException;
 
 import javax.servlet.ServletException;
@@ -21,7 +21,7 @@ public class LoginServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        UserDao usDao = new UserDao();
+        UserDao userDao = new UserDao();
 
         try {
             String rawUsername = request.getParameter("un");
@@ -31,16 +31,14 @@ public class LoginServlet extends HttpServlet {
             String username = sanitizeInput(rawUsername);
             String password = sanitizeInput(rawPassword);
 
-            UserBean user = new UserBean();
-            user.setUsername(username);
-            user.setPassword(password);
+            // Hashing della password
+            String hashedPassword = hashPassword(password);
 
-            // Using sanitized inputs to retrieve the user
-            user = usDao.doRetrieve(username, password);
+            UserBean user = userDao.doRetrieve(username, hashedPassword);
 
             String checkout = request.getParameter("checkout");
 
-            if (user.isValid()) {
+            if (user != null && user.isValid()) {
                 HttpSession session = request.getSession(true);
                 session.setAttribute("currentSessionUser", user);
                 if (checkout != null) {
@@ -49,14 +47,34 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/Home.jsp");
                 }
             } else {
-                response.sendRedirect(request.getContextPath() + "/Login.jsp?action=error"); // error page
+                response.sendRedirect(request.getContextPath() + "/Login.jsp?action=error"); // Pagina di errore
             }
         } catch (SQLException e) {
-            System.out.println("Error:" + e.getMessage());
+            System.out.println("Database Error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/Login.jsp?action=db_error"); // Pagina di errore del database
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/Login.jsp?action=error"); // Pagina di errore generico
         }
     }
 
-    // Method to sanitize input
+    // Metodo per l'hashing della password (SHA-512)
+    private String hashPassword(String password) throws Exception {
+        // Implementazione dell'hashing della password (SHA-512)
+        // Qui potresti utilizzare la tua implementazione di hashing, come abbiamo fatto nella servlet di registrazione
+        // Per semplicità, useremo SHA-512 in questo esempio
+        MessageDigest digest = MessageDigest.getInstance("SHA-512");
+        byte[] hashedBytes = digest.digest(password.getBytes());
+
+        // Converti l'array di byte in una stringa esadecimale
+        StringBuilder stringBuilder = new StringBuilder();
+        for (byte b : hashedBytes) {
+            stringBuilder.append(String.format("%02x", b));
+        }
+        return stringBuilder.toString();
+    }
+
+    // Metodo per sanificare l'input
     private String sanitizeInput(String input) {
         if (input != null) {
             // Replace <, >, &, ", ' with their HTML encoded equivalents
