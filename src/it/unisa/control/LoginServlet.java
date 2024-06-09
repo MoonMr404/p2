@@ -12,52 +12,60 @@ import javax.servlet.http.HttpSession;
 
 import it.unisa.model.*;
 
-/**
- * Servlet implementation class LoginServlet
- */
 @WebServlet("/Login")
 public class LoginServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-    
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doPost(request, response);
-	}
-			
-	
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-	UserDao usDao = new UserDao();
-		
-		try
-		{	    
+    private static final long serialVersionUID = 1L;
 
-		     UserBean user = new UserBean();
-		     user.setUsername(request.getParameter("un"));
-		     user.setPassword(request.getParameter("pw"));
-		     user = usDao.doRetrieve(request.getParameter("un"),request.getParameter("pw"));
-			   		    
-		    
-		     String checkout = request.getParameter("checkout");
-		     
-		     if (user.isValid())
-		     {
-			        
-		          HttpSession session = request.getSession(true);	    
-		          session.setAttribute("currentSessionUser",user); 
-		          if(checkout!=null)
-		        	  response.sendRedirect(request.getContextPath() + "/account?page=Checkout.jsp");
-		          
-		          else
-		        	  response.sendRedirect(request.getContextPath() + "/Home.jsp");
-		     }
-			        
-		     else 
-		          response.sendRedirect(request.getContextPath() +"/Login.jsp?action=error"); //error page 
-		} 
-				
-				
-		catch(SQLException e) {
-			System.out.println("Error:" + e.getMessage());
-		}
-		  }
-	}
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        UserDao usDao = new UserDao();
+
+        try {
+            String rawUsername = request.getParameter("un");
+            String rawPassword = request.getParameter("pw");
+
+            // Sanitize the inputs to prevent XSS
+            String username = sanitizeInput(rawUsername);
+            String password = sanitizeInput(rawPassword);
+
+            UserBean user = new UserBean();
+            user.setUsername(username);
+            user.setPassword(password);
+
+            // Using sanitized inputs to retrieve the user
+            user = usDao.doRetrieve(username, password);
+
+            String checkout = request.getParameter("checkout");
+
+            if (user.isValid()) {
+                HttpSession session = request.getSession(true);
+                session.setAttribute("currentSessionUser", user);
+                if (checkout != null) {
+                    response.sendRedirect(request.getContextPath() + "/account?page=Checkout.jsp");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/Home.jsp");
+                }
+            } else {
+                response.sendRedirect(request.getContextPath() + "/Login.jsp?action=error"); // error page
+            }
+        } catch (SQLException e) {
+            System.out.println("Error:" + e.getMessage());
+        }
+    }
+
+    // Method to sanitize input
+    private String sanitizeInput(String input) {
+        if (input != null) {
+            // Replace <, >, &, ", ' with their HTML encoded equivalents
+            input = input.replaceAll("&", "&amp;");
+            input = input.replaceAll("<", "&lt;");
+            input = input.replaceAll(">", "&gt;");
+            input = input.replaceAll("\"", "&quot;");
+            input = input.replaceAll("'", "&#39;");
+        }
+        return input;
+    }
+}
