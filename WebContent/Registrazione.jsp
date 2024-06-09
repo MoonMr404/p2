@@ -49,7 +49,7 @@
 			<p id="errNascita"></p> 
 		</div>
 		<div class="tableRow">
-			<p>Username:</p>
+			<p>Username :</p>
 			<p><input type="text" id="us" name="us" placeholder="MarioR87" onfocus="myFunction(this)" required/></p>
 		</div>
 		<div class="tableRow">
