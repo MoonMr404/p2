@@ -145,7 +145,6 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 	}
 
 	@Override
-	@Override
 	public synchronized ArrayList<ProdottoBean> doRetrieveAll(String order) throws SQLException {
 	    Connection connection = null;
 	    PreparedStatement preparedStatement = null;
@@ -180,7 +179,7 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 	            bean.setNome(rs.getString("NOME"));
 	            bean.setDescrizione(rs.getString("DESCRIZIONE"));
 	            bean.setPrezzo(rs.getDouble("PREZZO"));
-	            bean.setQuantità(rs.getInt("QUANTITA"));
+	            bean.setQuantita(rs.getInt("QUANTITA"));
 	            bean.setPiattaforma(rs.getString("PIATTAFORMA"));
 	            bean.setIva(rs.getString("IVA"));
 	            bean.setDataUscita(rs.getString("DATA_USCITA"));
