@@ -48,7 +48,7 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 			preparedStatement.setString(2, product.getPiattaforma());
 			preparedStatement.setString(3, product.getDescrizione());
 			preparedStatement.setDouble(4, product.getPrezzo());
-			preparedStatement.setInt(5, product.getQuantità());
+			preparedStatement.setInt(5, product.getQuantita());
 			preparedStatement.setString(6,product.getGenere());
 			preparedStatement.setString(7, product.getDataUscita());
 			preparedStatement.setBoolean(8, product.isInVendita());
@@ -92,7 +92,7 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 				bean.setNome(rs.getString("NOME"));
 				bean.setDescrizione(rs.getString("DESCRIZIONE"));
 				bean.setPrezzo(rs.getDouble("PREZZO"));
-				bean.setQuantità(rs.getInt("QUANTITA"));
+				bean.setQuantitï¿½(rs.getInt("QUANTITA"));
 				bean.setPiattaforma(rs.getString("PIATTAFORMA"));
 				bean.setIva(rs.getString("IVA"));
 				bean.setDataUscita(rs.getString("DATA_USCITA"));
@@ -145,55 +145,66 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 	}
 
 	@Override
+	@Override
 	public synchronized ArrayList<ProdottoBean> doRetrieveAll(String order) throws SQLException {
-		Connection connection = null;
-		PreparedStatement preparedStatement = null;
+	    Connection connection = null;
+	    PreparedStatement preparedStatement = null;
+	    ArrayList<ProdottoBean> products = new ArrayList<ProdottoBean>();
 
-		ArrayList<ProdottoBean> products = new ArrayList<ProdottoBean>();
+	    // Whitelist dei possibili valori per il parametro order
+	    String[] validOrders = {"NOME", "PIATTAFORMA", "PREZZO", "GENERE", "DATA_USCITA"};
+	    boolean isValidOrder = false;
 
-		String selectSQL = "SELECT * FROM " + ProdottoDao.TABLE_NAME;
+	    // Verifica se il valore di order Ã¨ valido
+	    for (String validOrder : validOrders) {
+	        if (validOrder.equals(order)) {
+	            isValidOrder = true;
+	            break;
+	        }
+	    }
 
-		if (order != null && !order.equals("")) {
-			selectSQL += " ORDER BY " + order;
-		}
+	    // Costruzione della query con parametro validato
+	    String selectSQL = "SELECT * FROM " + ProdottoDao.TABLE_NAME;
+	    if (isValidOrder) {
+	        selectSQL += " ORDER BY " + order;
+	    }
 
-		try {
-			connection = ds.getConnection();
-			preparedStatement = connection.prepareStatement(selectSQL);
+	    try {
+	        connection = ds.getConnection();
+	        preparedStatement = connection.prepareStatement(selectSQL);
+	        ResultSet rs = preparedStatement.executeQuery();
 
-			ResultSet rs = preparedStatement.executeQuery();
+	        while (rs.next()) {
+	            ProdottoBean bean = new ProdottoBean();
+	            bean.setIdProdotto(rs.getInt("ID_PRODOTTO"));
+	            bean.setNome(rs.getString("NOME"));
+	            bean.setDescrizione(rs.getString("DESCRIZIONE"));
+	            bean.setPrezzo(rs.getDouble("PREZZO"));
+	            bean.setQuantitÃ (rs.getInt("QUANTITA"));
+	            bean.setPiattaforma(rs.getString("PIATTAFORMA"));
+	            bean.setIva(rs.getString("IVA"));
+	            bean.setDataUscita(rs.getString("DATA_USCITA"));
+	            bean.setInVendita(rs.getBoolean("IN_VENDITA"));
+	            bean.setImmagine(rs.getString("IMMAGINE"));
+	            bean.setGenere(rs.getString("GENERE"));
+	            bean.setDescrizioneDettagliata(rs.getString("DESCRIZIONE_DETTAGLIATA"));
 
-			while (rs.next()) {
-				ProdottoBean bean = new ProdottoBean();
-
-				bean.setIdProdotto(rs.getInt("ID_PRODOTTO"));
-				bean.setNome(rs.getString("NOME"));
-				bean.setDescrizione(rs.getString("DESCRIZIONE"));
-				bean.setPrezzo(rs.getDouble("PREZZO"));
-				bean.setQuantità(rs.getInt("QUANTITA"));
-				bean.setPiattaforma(rs.getString("PIATTAFORMA"));
-				bean.setIva(rs.getString("IVA"));
-				bean.setDataUscita(rs.getString("DATA_USCITA"));
-				bean.setInVendita(rs.getBoolean("IN_VENDITA"));
-				bean.setImmagine(rs.getString("IMMAGINE"));
-				bean.setGenere(rs.getString("GENERE"));
-				bean.setDescrizioneDettagliata(rs.getString("DESCRIZIONE_DETTAGLIATA"));
-
-				products.add(bean);
-			}
-
-		} finally {
-			try {
-				if (preparedStatement != null)
-					preparedStatement.close();
-			} finally {
-				if (connection != null)
-					connection.close();
-			}
-		}
-		return products;
+	            products.add(bean);
+	        }
+	    } finally {
+	        try {
+	            if (preparedStatement != null) {
+	                preparedStatement.close();
+	            }
+	        } finally {
+	            if (connection != null) {
+	                connection.close();
+	            }
+	        }
+	    }
+	    return products;
 	}
-	
+
 	@Override
 	public synchronized void doUpdateQnt(int id, int qnt) throws SQLException {
 
@@ -241,7 +252,7 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 			connection.setAutoCommit(false);
 			preparedStatement = connection.prepareStatement(updateSQL);
 			preparedStatement.setString(1, product.getNome());
-			preparedStatement.setInt(2, product.getQuantità());
+			preparedStatement.setInt(2, product.getQuantita());
 			preparedStatement.setString(3, product.getPiattaforma());
 			preparedStatement.setString(4, product.getDescrizione());
 			preparedStatement.setDouble(5, product.getPrezzo());
@@ -291,7 +302,7 @@ public class ProdottoDao implements ProdottoDaoInterfaccia{
 				bean.setNome(rs.getString("NOME"));
 				bean.setDescrizione(rs.getString("DESCRIZIONE"));
 				bean.setPrezzo(rs.getDouble("PREZZO"));
-				bean.setQuantità(rs.getInt("QUANTITA"));
+				bean.setQuantita(rs.getInt("QUANTITA"));
 				bean.setPiattaforma(rs.getString("PIATTAFORMA"));
 				bean.setIva(rs.getString("IVA"));
 				bean.setDataUscita(rs.getString("DATA_USCITA"));
